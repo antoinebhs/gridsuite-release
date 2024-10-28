@@ -87,4 +87,4 @@ jobs:
             console.log(`Triggered release for ${owner}/${repo} with commit SHA: ${commitSHA}`);
             console.log(response.data);
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

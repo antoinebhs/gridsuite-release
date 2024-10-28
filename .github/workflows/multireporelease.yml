@@ -68,7 +68,7 @@ jobs:
           rm -rf temp_repo
 
       - name: Trigger Release Workflow in ${{ matrix.repo }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.RELEASE_TOKEN }}
           script: |

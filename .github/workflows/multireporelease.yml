@@ -86,4 +86,3 @@ jobs:
               }
             });
             console.log(`Triggered release for ${owner}/${repo} with commit SHA: ${commitSHA}`);
-            console.log(response.data);

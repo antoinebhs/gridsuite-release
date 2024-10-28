@@ -70,6 +70,7 @@ jobs:
       - name: Trigger Release Workflow in ${{ matrix.repo }}
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.RELEASE_TOKEN }}
           script: |
             const [owner, repo] = "${{ matrix.repo }}".split("/");
             const commitSHA = "${{ steps.get-sha.outputs.commit_sha }}";
@@ -86,5 +87,3 @@ jobs:
             });
             console.log(`Triggered release for ${owner}/${repo} with commit SHA: ${commitSHA}`);
             console.log(response.data);
-        env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

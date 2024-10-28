@@ -1,0 +1,90 @@
+name: Trigger Release On Deployed Repos 
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseVersion:
+        description: Release version (vX.X)
+        required: true
+      commitDate:
+        description: Date and time (in UTC) of the commit to release (e.g., "2024-10-25 15:00:00")
+        required: true
+
+env:
+  WORKFLOW_FILE: "release.yml"
+
+jobs:
+  trigger-release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        repo: [
+          "gridsuite/spreadsheet-config-server",
+          "powsybl/powsybl-network-conversion-server"
+        ]
+
+    steps:
+      - name: Validate Input Formats
+        id: validate-inputs
+        run: |
+          RELEASE_VERSION="${{ github.event.inputs.releaseVersion }}"
+          COMMIT_DATE="${{ github.event.inputs.commitDate }}"
+
+          if ! [[ "$RELEASE_VERSION" =~ ^v[0-9]+\.[0-9]+$ ]]; then
+            echo "Error: Invalid release version format. Expected format: vX.X"
+            exit 1
+          fi
+
+          if ! [[ "$COMMIT_DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
+            echo "Error: Invalid commit date format. Expected format: YYYY-MM-DD HH:MM:SS"
+            exit 1
+          fi
+
+      - name: Get Commit SHA for Repository ${{ matrix.repo }}
+        id: get-sha
+        run: |
+          REPO="${{ matrix.repo }}"
+          COMMIT_DATE="${{ github.event.inputs.commitDate }}"
+
+          # Create a temporary directory to fetch latest commit SHA before COMMIT_DATE
+          mkdir temp_repo
+          cd temp_repo
+          git init -q
+          git remote add origin https://github.com/${REPO}.git
+          git fetch origin main
+
+          # Get the latest commit SHA before COMMIT_DATE
+          COMMIT_SHA=$(git rev-list -1 --before="${COMMIT_DATE}" origin/main)
+          if [ -z "$COMMIT_SHA" ]; then
+            echo "No commit found before ${COMMIT_DATE} in ${REPO}"
+            exit 1
+          fi
+
+          echo "Latest commit SHA in ${REPO} before ${COMMIT_DATE}: ${COMMIT_SHA}"
+          echo "commit_sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+          
+          # Clean up
+          cd ..
+          rm -rf temp_repo
+
+      - name: Trigger Release Workflow in ${{ matrix.repo }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const [owner, repo] = "${{ matrix.repo }}".split("/");
+            const commitSHA = "${{ steps.get-sha.outputs.commit_sha }}";
+            const releaseVersion ="${{ github.event.inputs.releaseVersion }}"
+            const response = await github.rest.actions.createWorkflowDispatch({
+              owner,
+              repo,
+              workflow_id: process.env.WORKFLOW_FILE,
+              ref: 'main',
+              inputs: {
+                releaseVersion: releaseVersion,
+                gitReference: commitSHA
+              }
+            });
+            console.log(`Triggered release for ${owner}/${repo} with commit SHA: ${commitSHA}`);
+            console.log(response.data);
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

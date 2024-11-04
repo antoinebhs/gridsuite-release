@@ -9,3 +9,7 @@ on:
     secrets:
       personal_access_token:
         required: true
+
+jobs:
+  my_first_job:
+    name: My first job

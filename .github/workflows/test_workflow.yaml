@@ -1,9 +1,9 @@
-name: Call API Example
+name: NPM publish
 
 on:
   workflow_dispatch:
     inputs:
-      npmtoken:
+      nodeauthtoken:
         required: true
         type: string
 
@@ -13,9 +13,9 @@ jobs:
     steps:
     - name: Mask Password
       run: |
-        NPM_TOKEN=$(jq -r '.inputs.npmtoken' $GITHUB_EVENT_PATH)
-        echo ::add-mask::$NPM_TOKEN
-        echo NPM_TOKEN=$NPM_TOKEN >> $GITHUB_ENV
+        NODE_AUTH_TOKEN=$(jq -r '.inputs.nodeauthtoken' $GITHUB_EVENT_PATH)
+        echo ::add-mask::$NODE_AUTH_TOKEN
+        echo NODE_AUTH_TOKEN=$NODE_AUTH_TOKEN >> $GITHUB_ENV
     - run: npm publish
       env:
-        NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ env.NODE_AUTH_TOKEN }}

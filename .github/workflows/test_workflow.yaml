@@ -8,7 +8,7 @@ on:
         type: string
 
 jobs:
-  do_the_thing:
+  test_publish_npm:
     runs-on: ubuntu-latest
     steps:
     - name: Mask Password

@@ -3,10 +3,7 @@ name: Call API Example
 on:
   workflow_dispatch:
     inputs:
-      username:
-        required: true
-        type: string
-      password:
+      npmtoken:
         required: true
         type: string
 
@@ -14,11 +11,11 @@ jobs:
   do_the_thing:
     runs-on: ubuntu-latest
     steps:
-    #- name: Mask Password
-    #  run: |
-    #    API_PASSWORD=$(jq -r '.inputs.password' $GITHUB_EVENT_PATH)
-    #    echo ::add-mask::$API_PASSWORD
-    #    echo API_PASSWORD=$API_PASSWORD >> $GITHUB_ENV
+    - name: Mask Password
+      run: |
+        NPM_TOKEN=$(jq -r '.inputs.npmtoken' $GITHUB_EVENT_PATH)
+        echo ::add-mask::$NPM_TOKEN
+        echo NPM_TOKEN=$NPM_TOKEN >> $GITHUB_ENV
     - run: npm publish
       env:
-        NODE_AUTH_TOKEN: ${{ github.event.inputs.password }}
+        NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}

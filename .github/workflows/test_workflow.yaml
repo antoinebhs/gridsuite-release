@@ -19,10 +19,6 @@ jobs:
     #    API_PASSWORD=$(jq -r '.inputs.password' $GITHUB_EVENT_PATH)
     #    echo ::add-mask::$API_PASSWORD
     #    echo API_PASSWORD=$API_PASSWORD >> $GITHUB_ENV
-    - name: Call API
-      uses: fjogeleit/http-request-action@v1.11.1
-      with:
-        url: https://www.example.com/api/awesome/stuff
-        method: 'GET'
-        username: ${{ github.event.inputs.username }}
-        password: ${{ env.API_PASSWORD }}
+    - run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ github.event.inputs.password }}
